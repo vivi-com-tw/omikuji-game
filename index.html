@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4eedf">
+<title>おみくじ｜拜訪神明的領域</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --paper: light-dark(#f7f1e5, #24221e);
+  --paper-deep: light-dark(#eee3ce, #302b25);
+  --ink: light-dark(#2f2a24, #f2e8d7);
+  --muted: light-dark(#766b5c, #c2b39b);
+  --red: light-dark(#9d302b, #d96a5f);
+  --gold: light-dark(#a7833e, #d4b66d);
+  --line: light-dark(#d8c8aa, #51483b);
+  --card: light-dark(rgba(255,252,245,.86), rgba(44,40,34,.92));
+}
+* { box-sizing: border-box; }
+html { min-height: 100%; background: var(--paper); }
+body { margin: 0; min-height: 100vh; background: var(--paper); color: var(--ink); font-family: "Noto Serif TC", "Songti TC", "PMingLiU", serif; }
+button { font: inherit; }
+.app-root { min-height: 100vh; width: 100%; background-color: var(--paper); color: var(--ink); overflow: hidden; position: relative; }
+.app-root::before, .app-root::after { content:""; position: absolute; pointer-events: none; width: 220px; height: 220px; opacity: .22; border: 1px solid var(--gold); border-radius: 50%; background: repeating-radial-gradient(circle at center, transparent 0 10px, var(--gold) 10.5px 11px, transparent 11.5px 20px); }
+.app-root::before { top: -125px; left: -115px; }
+.app-root::after { bottom: -135px; right: -120px; }
+.wrap { width: min(100% - 32px, 760px); margin: 0 auto; padding: 30px 0 36px; position: relative; z-index: 1; }
+.topline { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--muted); font-family: sans-serif; font-size:11px; letter-spacing:.16em; text-transform:uppercase; }
+.seal { width:38px; height:38px; display:grid; place-items:center; border:1px solid var(--red); color:var(--red); transform:rotate(-8deg); font-size:18px; flex-shrink:0; }
+.hero { text-align:center; padding:26px 10px 18px; }
+.eyebrow { color:var(--red); letter-spacing:.25em; font-size:12px; margin:0 0 12px; }
+h1 { font-weight:500; font-size:clamp(34px, 8vw, 54px); letter-spacing:.12em; margin:0; line-height:1.25; }
+.subtitle { color:var(--muted); font-size:14px; letter-spacing:.12em; margin:11px 0 0; }
+.ornament { display:flex; align-items:center; justify-content:center; gap:10px; color:var(--gold); margin:20px auto 0; }
+.ornament::before,.ornament::after { content:""; width:68px; height:1px; background:var(--gold); opacity:.7; }
+.intro { max-width:500px; margin:0 auto 22px; text-align:center; color:var(--muted); line-height:1.9; font-size:14px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:4px; box-shadow:0 10px 30px rgba(55,40,20,.06); position:relative; overflow:hidden; }
+.card::before { content:""; position:absolute; inset:7px; border:1px solid color-mix(in srgb, var(--gold) 42%, transparent); pointer-events:none; }
+.draw-panel { padding:28px 22px 26px; text-align:center; }
+.illustration { height:135px; width:100%; display:flex; justify-content:center; align-items:center; margin:0 auto 8px; }
+.torii { width:145px; height:120px; overflow:visible; filter:drop-shadow(0 3px 0 rgba(80,40,20,.04)); }
+.prompt { font-size:15px; letter-spacing:.08em; margin:6px 0 18px; }
+.primary { background:var(--red); color:#fff8eb; border:1px solid var(--red); border-radius:2px; padding:13px 28px; min-width:190px; cursor:pointer; letter-spacing:.15em; box-shadow:0 3px 0 color-mix(in srgb, var(--red) 65%, black); transition:transform .16s ease, opacity .16s ease; }
+.primary:hover { transform:translateY(-2px); }
+.primary:active { transform:translateY(1px); box-shadow:none; }
+.hint { color:var(--muted); font:11px/1.8 sans-serif; margin:17px 0 0; letter-spacing:.04em; }
+.result { display:none; padding:27px 24px 24px; animation:rise .45s ease both; }
+.result.show { display:block; }
+@keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.result-head { display:flex; justify-content:center; align-items:center; gap:14px; padding:3px 0 17px; border-bottom:1px solid var(--line); }
+.result-kanji { writing-mode:vertical-rl; font-size:clamp(35px, 8vw, 45px); letter-spacing:.15em; color:var(--red); border:1px solid var(--red); padding:9px 8px; min-height:88px; }
+.result-meta { text-align:left; }
+.result-meta .small { color:var(--muted); font-size:11px; letter-spacing:.15em; }
+.result-meta h2 { font-size:24px; font-weight:500; margin:5px 0; letter-spacing:.08em; }
+.result-meta p { margin:0; color:var(--muted); font-size:13px; }
+.poem { text-align:center; padding:22px 4px 17px; }
+.poem .jp { font-size:clamp(19px, 4.7vw, 23px); line-height:1.9; letter-spacing:.06em; margin:0 0 10px; }
+.poem .zh { font-size:14px; line-height:1.9; margin:0 auto; max-width:470px; }
+.advice-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:9px; margin:7px 0 19px; }
+.advice { border:1px solid var(--line); padding:11px 12px; background:color-mix(in srgb, var(--paper-deep) 38%, transparent); }
+.advice b { display:block; color:var(--red); font-size:12px; font-weight:500; margin-bottom:5px; letter-spacing:.08em; }
+.advice span { font-size:13px; line-height:1.65; }
+.result-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+.secondary { border:1px solid var(--line); background:transparent; color:var(--ink); padding:10px 18px; cursor:pointer; font-size:13px; letter-spacing:.06em; }
+.secondary:hover { border-color:var(--gold); }
+.note { margin:18px auto 0; text-align:center; max-width:560px; color:var(--muted); font:11px/1.9 sans-serif; }
+.footer { margin-top:27px; text-align:center; font-size:11px; color:var(--muted); letter-spacing:.08em; line-height:2; }
+.footer .red { color:var(--red); }
+@media (max-width:480px) { .wrap { width:min(100% - 22px, 760px); padding-top:20px; } .hero { padding-top:23px; } .draw-panel { padding:22px 15px 22px; } .result { padding:22px 15px 19px; } .advice-grid { gap:7px; } .advice { padding:10px; } .topline { font-size:9px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<main class="app-root">
+  <div class="wrap">
+    <div class="topline"><span>拜訪神明的領域</span><span class="seal" aria-label="朱印風格裝飾">結</span><span>SHRINE CULTURE · OMikuji</span></div>
+    <header class="hero">
+      <p class="eyebrow">神社觀光・線上體驗</p>
+      <h1>おみくじ</h1>
+      <p class="subtitle">御神籤・今日の運勢</p>
+      <div class="ornament" aria-hidden="true">✧　❀　✧</div>
+    </header>
+    <p class="intro">請靜下心來，想一件此刻放在心上的事。<br>抽一支籤，讀一段給自己的提醒。</p>
+    <section class="card" aria-live="polite">
+      <div class="draw-panel" id="drawPanel">
+        <div class="illustration" aria-hidden="true">
+          <svg class="torii" viewBox="0 0 180 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M23 30 Q90 18 157 30 L153 39 Q90 32 27 39 Z" fill="#A3332D"/>
+            <path d="M34 43 L146 43 L143 51 L37 51 Z" fill="#A3332D"/>
+            <path d="M47 48 L58 48 L55 119 L44 119 Z" fill="#A3332D"/>
+            <path d="M122 48 L133 48 L136 119 L125 119 Z" fill="#A3332D"/>
+            <path d="M39 116 L141 116 L141 123 L39 123 Z" fill="#A3332D"/>
+            <path d="M18 129 Q90 120 162 129" stroke="#B18B45" stroke-width="1.5"/>
+            <path d="M33 20 Q90 8 147 20" stroke="#B18B45" stroke-width="1.5"/>
+            <circle cx="90" cy="77" r="13" stroke="#B18B45" stroke-width="1.4"/>
+            <path d="M90 66 L93 74 L102 77 L93 80 L90 89 L87 80 L78 77 L87 74 Z" fill="#B18B45"/>
+            <path d="M14 14 l4 4 -4 4 -4 -4z M166 53 l4 4 -4 4 -4 -4z M22 91 l3 3 -3 3 -3 -3z M156 99 l3 3 -3 3 -3 -3z" fill="#B18B45"/>
+          </svg>
+        </div>
+        <p class="prompt">願今日的相遇，成為一份溫柔的指引。</p>
+        <button class="primary" id="drawBtn" type="button">引く ・ 開始抽籤</button>
+        <p class="hint">おみくじを引いてみましょう<br>點擊按鈕，抽取今日的籤運</p>
+      </div>
+      <div class="result" id="resultPanel">
+        <div class="result-head">
+          <div class="result-kanji" id="fortuneKanji">吉</div>
+          <div class="result-meta"><div class="small">あなたのおみくじ</div><h2 id="fortuneName">吉・きち</h2><p id="fortuneSubtitle">平穩前行，靜待花開。</p></div>
+        </div>
+        <div class="poem"><p class="jp" id="poemJp"></p><p class="zh" id="poemZh"></p></div>
+        <div class="advice-grid" id="adviceGrid"></div>
+        <div class="result-actions"><button class="primary" id="againBtn" type="button">もう一度 ・ 再抽一次</button><button class="secondary" id="backBtn" type="button">返回籤筒</button></div>
+      </div>
+    </section>
+    <p class="note">※ 本頁為課堂文化體驗所設計的原創示意籤文，並非任何特定神社發行的正式御神籤。籤運僅供趣味參考，請以自己的判斷與行動為主。</p>
+    <footer class="footer"><span class="red">❀</span>　拜訪神明的領域　｜　日本神社觀光與信仰　<span class="red">❀</span><br>和紙・金色・朱印の美意識</footer>
+  </div>
+</main>
+<script>
+const fortunes = [
+ {name:'大吉',jp:'だいきち',subtitle:'心願漸近，珍惜眼前的好時機。',poem:'朝日さす　道に花咲き\n一歩ごと　願いの芽吹く',translation:'晨光照耀前方的道路，花朵悄然綻放。\n只要踏穩每一步，心願便有萌芽的可能。',advice:[['願望・ねがいごと','保持初心，主動把握機會。'],['学業・がくぎょう','持續累積，成果值得期待。'],['旅・たび','適合規劃新旅程，留心沿途風景。'],['人間関係・たいじん','真誠表達，善意會帶來回應。']]},
+ {name:'吉',jp:'きち',subtitle:'不急不躁，平穩之中自有收穫。',poem:'風おだやかに　水澄みて\n歩む道にも　光あり',translation:'風平浪靜，水面清澈；\n即使走在平凡的路上，也自有光亮。',advice:[['願望・ねがいごと','循序漸進，按部就班最穩妥。'],['学業・がくぎょう','把不懂的地方弄清楚，就是進步。'],['旅・たび','按計畫出發，也為意外驚喜留點空間。'],['人間関係・たいじん','多聆聽對方，關係自然更和諧。']]},
+ {name:'中吉',jp:'ちゅうきち',subtitle:'機會正在累積，耐心是你的助力。',poem:'若葉の色は　日ごと増し\n時を重ねて　森となる',translation:'嫩葉一天天增添色彩，\n經過時間累積，終能成為一片森林。',advice:[['願望・ねがいごと','已有好的開始，記得持續投入。'],['学業・がくぎょう','拆成小目標，比一次求快更有效。'],['旅・たび','做足功課，旅途會更從容。'],['人間関係・たいじん','一起完成一件小事，能拉近彼此距離。']]},
+ {name:'小吉',jp:'しょうきち',subtitle:'從身邊的小確幸，找回前進的力量。',poem:'小さき花も　春を知り\n静かな庭に　香り立つ',translation:'小小的花朵也知道春天已到，\n在安靜的庭院裡，散發淡淡清香。',advice:[['願望・ねがいごと','先完成一件小事，累積信心。'],['学業・がくぎょう','每天一點點，比臨時抱佛腳可靠。'],['旅・たび','不妨探索巷弄，驚喜常在轉角。'],['人間関係・たいじん','一句問候，也能成為溫暖的開始。']]},
+ {name:'末吉',jp:'すえきち',subtitle:'好事不必急著到來，慢慢準備即可。',poem:'冬越す枝に　芽は宿り\n春の便りを　待ちわびる',translation:'越過寒冬的枝頭，早已藏著新芽；\n現在看不見的變化，也許正在悄悄準備。',advice:[['願望・ねがいごと','先整理條件，時機成熟再行動。'],['学業・がくぎょう','打好基礎，不要因進度慢而灰心。'],['旅・たび','提早確認交通與住宿，安心最重要。'],['人間関係・たいじん','給彼此一些時間，不必急著下結論。']]},
+ {name:'凶',jp:'きょう',subtitle:'把步伐放慢，重新確認方向。',poem:'雲深くとも　空はあり\n足もと見つめ　道を選ぶ',translation:'即使雲層深厚，天空仍在；\n看清腳下，再選擇下一步的方向。',advice:[['願望・ねがいごと','暫緩衝動決定，重新檢查計畫。'],['学業・がくぎょう','回頭複習基本觀念，會比硬往前更好。'],['旅・たび','留意天候、交通與隨身物品。'],['人間関係・たいじん','先冷靜再回應，避免一時情緒。']]},
+ {name:'大凶',jp:'だいきょう',subtitle:'不是定局，而是提醒自己更謹慎。',poem:'雨降る夜も　明けぬ日はなし\n灯を守りて　時を待つ',translation:'下雨的夜晚終會迎來天明；\n先守住心中的燈火，耐心等待時機。',advice:[['願望・ねがいごと','把大目標拆小，先處理眼前一步。'],['学業・がくぎょう','遇到瓶頸就求助，不必獨自硬撐。'],['旅・たび','保留備案，避免行程排得太緊。'],['人間関係・たいじん','先照顧好自己的狀態，再好好溝通。']]}
+];
+const drawPanel = document.getElementById('drawPanel');
+const resultPanel = document.getElementById('resultPanel');
+function drawFortune() {
+  const fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+  document.getElementById('fortuneKanji').textContent = fortune.name;
+  document.getElementById('fortuneName').textContent = fortune.name + '・' + fortune.jp;
+  document.getElementById('fortuneSubtitle').textContent = fortune.subtitle;
+  document.getElementById('poemJp').textContent = fortune.poem;
+  document.getElementById('poemZh').textContent = fortune.translation;
+  const grid = document.getElementById('adviceGrid');
+  grid.replaceChildren();
+  fortune.advice.forEach(([label, text]) => {
+    const item = document.createElement('div'); item.className = 'advice';
+    const title = document.createElement('b'); title.textContent = label;
+    const body = document.createElement('span'); body.textContent = text;
+    item.append(title, body); grid.append(item);
+  });
+  drawPanel.style.display = 'none';
+  resultPanel.classList.remove('show');
+  void resultPanel.offsetWidth;
+  resultPanel.classList.add('show');
+  resultPanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function resetDraw() {
+  resultPanel.classList.remove('show');
+  resultPanel.style.display = 'none';
+  drawPanel.style.display = 'block';
+  document.getElementById('drawBtn').focus({preventScroll:true});
+}
+document.getElementById('drawBtn').addEventListener('click', drawFortune);
+document.getElementById('againBtn').addEventListener('click', drawFortune);
+document.getElementById('backBtn').addEventListener('click', resetDraw);
+</script>
+</body>
+</html>
